@@ -16,6 +16,12 @@ KI-Agent / MCP-Client                    SqlMcpServer (ASP.NET Core)            
                                          └─────────────────────────────────────────┘   └──────────┘
 ```
 
+## So sieht es aus
+
+![MCP-Aufrufe gegen den laufenden Server: 401 ohne Key, lesende Abfrage, abgewiesene Schreibversuche](docs/img/mcp-aufrufe.jpg)
+
+*Echte Aufrufe gegen den lokal laufenden Server (Ausgabe gekürzt). Grün zeigt erwartetes Verhalten, auch bei abgewiesenen Anfragen.*
+
 ## Funktionen
 
 | MCP-Tool         | Zweck                                                                         |
