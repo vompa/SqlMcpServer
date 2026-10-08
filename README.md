@@ -1,4 +1,6 @@
 # SqlMcpServer
+[![CI](https://github.com/vompa/SqlMcpServer/actions/workflows/ci.yml/badge.svg)](https://github.com/vompa/SqlMcpServer/actions/workflows/ci.yml)
+
 
 Ein kleiner, bewusst sauber gehaltener **MCP-Server (Model Context Protocol) in C# / .NET 10**, der einem KI-Agenten
 kontrollierten, **rein lesenden Zugriff auf eine SQL-Datenbank** gibt – abgesichert durch Authentifizierung,
