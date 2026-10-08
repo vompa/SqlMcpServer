@@ -9,13 +9,35 @@ Eingabeprüfung, eine schreibgeschützte Datenbankverbindung, Limits und Audit-L
 Das Projekt ist als Referenz gedacht: wenig Code, aber jede Entscheidung ist begründet (siehe
 [Designentscheidungen](#designentscheidungen)) und durch Tests belegt.
 
-```
-KI-Agent / MCP-Client                    SqlMcpServer (ASP.NET Core)                      SQLite
-┌──────────────────┐   HTTPS + API-Key   ┌─────────────────────────────────────────┐   ┌──────────┐
-│ Claude, VS Code, │ ─────────────────▶ │ API-Key-Auth → Rate Limit → MCP-Endpoint │   │          │
-│ eigene Agenten   │ ◀───────────────── │   list_tables · describe_table · run_query│ ─▶│ read-only│
-└──────────────────┘   JSON-Ergebnis     │   SqlGuard → DatabaseService (Limits)    │   │ Verbindung│
-                                         └─────────────────────────────────────────┘   └──────────┘
+```mermaid
+flowchart LR
+    agent["KI-Agent<br/>(MCP-Client)"]
+
+    subgraph server["SqlMcpServer (ASP.NET Core)"]
+        direction TB
+        auth["API-Key-Auth<br/>nur Hash gespeichert"]
+        rate["Rate Limit<br/>pro Client"]
+        tools["MCP-Tools<br/>list_tables · describe_table · run_query"]
+        guard["SqlGuard<br/>genau ein SELECT"]
+        svc["DatabaseService<br/>read-only Verbindung<br/>Zeilen- und Zeitlimit"]
+        audit["Audit-Log<br/>pro Aufruf"]
+        auth --> rate --> tools --> guard --> svc
+        tools -.-> audit
+    end
+
+    db[("SQLite<br/>Mode=ReadOnly")]
+
+    agent -- "HTTP + API-Key" --> auth
+    svc --> db
+
+    classDef client fill:#eef2ff,stroke:#6366f1,color:#1e1b4b
+    classDef security fill:#fff7ed,stroke:#f97316,color:#7c2d12
+    classDef endpoint fill:#ecfdf5,stroke:#10b981,color:#064e3b
+    classDef data fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    class agent client
+    class auth,rate,guard,audit security
+    class tools,svc endpoint
+    class db data
 ```
 
 ## So sieht es aus
