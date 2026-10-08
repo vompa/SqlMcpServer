@@ -10,7 +10,7 @@ Das Projekt ist als Referenz gedacht: wenig Code, aber jede Entscheidung ist beg
 [Designentscheidungen](#designentscheidungen)) und durch Tests belegt.
 
 ```mermaid
-flowchart LR
+flowchart TB
     agent["KI-Agent<br/>(MCP-Client)"]
 
     subgraph server["SqlMcpServer (ASP.NET Core)"]
