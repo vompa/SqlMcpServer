@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+TestResults/
+coverage/
+# lokale Demo-Datenbank (wird beim Start erzeugt)
+*.db
+*.db-journal
+*.stackdump
