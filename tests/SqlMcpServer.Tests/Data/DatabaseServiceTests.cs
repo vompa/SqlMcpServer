@@ -83,6 +83,16 @@ public sealed class DatabaseServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Query_with_already_cancelled_token_throws_operation_canceled()
+    {
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            CreateService().QueryAsync("SELECT * FROM customers", cts.Token));
+    }
+
+    [Fact]
     public async Task Connection_itself_is_read_only_even_without_guard()
     {
         // Zweite Schicht: selbst wenn der Guard umgangen würde, darf die Verbindung nicht schreiben.

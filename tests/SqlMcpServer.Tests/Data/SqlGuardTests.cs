@@ -54,6 +54,44 @@ public class SqlGuardTests
     public void Rejects_overlong_query() =>
         Assert.Throws<QueryRejectedException>(() => SqlGuard.EnsureReadOnly("select " + new string('1', SqlGuard.MaxLength)));
 
+    [Theory]
+    [InlineData("DeLeTe FrOm customers")]                                  // gemischte Schreibweise
+    [InlineData("SeLeCt 1 WhErE 1 = 1 UnIoN SeLeCt dRoP")]               // verbotenes Wort, auch gemischt geschrieben
+    [InlineData("SELECT 1;\tDROP TABLE customers")]                       // Tab statt Leerzeichen
+    [InlineData("SELECT 1;\nDROP TABLE customers")]                       // Zeilenumbruch
+    [InlineData("SELECT 1;\r\nDELETE\tFROM\ncustomers")]
+    [InlineData("DELETE\tFROM\ncustomers")]
+    [InlineData("select 1;; drop table customers")]                       // doppeltes Semikolon
+    [InlineData("select 1; ;")]
+    [InlineData(";select 1")]
+    [InlineData("with t as (select 1) insert into customers(name) select 'x' from t")]
+    [InlineData("WITH t AS (SELECT 1) UPDATE customers SET name = 'x'")]
+    [InlineData("vacuum")]
+    [InlineData("VACUUM INTO 'copy.db'")]
+    [InlineData("select 1; vacuum")]
+    [InlineData("explain select 1")]
+    [InlineData("EXPLAIN QUERY PLAN select * from customers")]
+    public void Rejects_bypass_attempts(string sql) =>
+        Assert.Throws<QueryRejectedException>(() => SqlGuard.EnsureReadOnly(sql));
+
+    [Theory]
+    [InlineData("select 1;;")]                                            // nur abschließende Semikola, keine zweite Anweisung
+    [InlineData("SeLeCt\t1")]
+    [InlineData("select\n*\nfrom\r\ncustomers")]
+    [InlineData("select '--'")]                                           // Kommentarzeichen nur im Literal
+    [InlineData("select '/*'")]
+    public void Allows_harmless_variants(string sql) =>
+        SqlGuard.EnsureReadOnly(sql);
+
+    [Fact]
+    public void Allows_query_of_exactly_max_length() =>
+        SqlGuard.EnsureReadOnly("select " + new string('1', SqlGuard.MaxLength - "select ".Length));
+
+    [Fact]
+    public void Rejects_query_of_max_length_plus_one() =>
+        Assert.Throws<QueryRejectedException>(() =>
+            SqlGuard.EnsureReadOnly("select " + new string('1', SqlGuard.MaxLength - "select ".Length + 1)));
+
     [Fact]
     public void Escaped_quote_does_not_hide_following_statement() =>
         // 'x''; y' ist ein einziges Literal, danach folgt aber eine echte zweite Anweisung
